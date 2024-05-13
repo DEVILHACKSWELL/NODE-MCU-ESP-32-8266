@@ -1,3 +1,4 @@
+//led +ve to d4 and negative to 220 ohm resistor and other leg of that resistor to gnd of esp32
 //fire base arduino client library ver 4.4.14
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
