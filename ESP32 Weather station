@@ -1,4 +1,5 @@
 //the DHT.h lib is from adafruit DHT sensor lib ver 1.4.4
+// vcc to vin , data pin to d26 and gnd of sensor to gnd of esp32
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
