@@ -7,8 +7,8 @@
 #include <DHT.h>
 
 // Replace with your network credentials
-const char* ssid = "invalid";
-const char* password = "devilhackswell";
+const char* ssid = "wifi ssid";
+const char* password = "wifi pass";
 
 #define DHTPIN 5     // Digital pin D1 connected to the DHT sensor
 
