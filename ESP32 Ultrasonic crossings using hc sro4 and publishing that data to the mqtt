@@ -1,0 +1,85 @@
+#include <WiFi.h>
+#include <WiFiManager.h>
+#include <PubSubClient.h>
+
+// MQTT broker details
+const char* mqtt_server = "test.mosquitto.org";
+const int mqtt_port = 1883;
+const char* mqtt_topic = "esp32/ultrasonic";
+
+// Ultrasonic sensor pins
+const int trigPin = 5;
+const int echoPin = 18;
+
+// WiFi and MQTT clients
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+// Function to reconnect to MQTT broker
+void reconnect() {
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    if (client.connect("ESP32Client")) {
+      Serial.println("connected");
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      delay(5000);
+    }
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  // WiFiManager instance
+  WiFiManager wifiManager;
+
+  // Reset WiFi settings each time the ESP32 is restarted
+  wifiManager.resetSettings();
+
+  // Set timeout to 3 minutes
+  wifiManager.setTimeout(180);
+
+  // Try to connect to WiFi or create an access point
+  if (!wifiManager.autoConnect("ESP32_AP")) {
+    Serial.println("Failed to connect and hit timeout");
+    delay(3000);
+    ESP.restart();
+  }
+
+  Serial.println("Connected to WiFi");
+
+  client.setServer(mqtt_server, mqtt_port);
+
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+}
+
+void loop() {
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop();
+
+  long duration, distance;
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  duration = pulseIn(echoPin, HIGH);
+  distance = (duration / 2) / 29.1;
+
+  char distanceStr[16];
+  dtostrf(distance, 1, 2, distanceStr);
+  client.publish(mqtt_topic, distanceStr);
+
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  delay(2000); // Publish every 2 seconds
+}
